@@ -93,19 +93,29 @@ const proxyUpdate = async (job: ProxyUpdateJob) => {
     .update(payload)
     .digest("hex");
 
-  const url = useCloudProxy
-    ? `https://proxy.growthbook.io/proxy/features`
-    : `${connection.proxy.host.replace(/\/$/, "")}/proxy/features`;
+  const pushUrls = useCloudProxy
+    ? ["https://proxy.growthbook.io/proxy/features"]
+    : [
+        connection.proxy.host,
+        ...(connection.proxy.additionalHostsExternal ?? []),
+      ]
+        .filter(Boolean)
+        .map((h) => `${h.replace(/\/$/, "")}/proxy/features`);
 
-  const res = await fireProxyWebhook({
-    url,
-    signature,
-    key: connection.key,
-    payload,
+  const results = await Promise.allSettled(
+    pushUrls.map((url) =>
+      fireProxyWebhook({ url, signature, key: connection.key, payload })
+    )
+  );
+
+  const failures = results.flatMap((r, i) => {
+    if (r.status === "rejected") return [`${pushUrls[i]}: ${r.reason}`];
+    if (!r.value.ok) return [`${pushUrls[i]}: status ${r.value.status}`];
+    return [];
   });
 
-  if (!res.ok) {
-    const e = "POST returned an invalid status code: " + res.status;
+  if (failures.length > 0) {
+    const e = "POST returned an invalid status code: " + failures.join("; ");
     await setProxyError(context, connection, e);
     throw new Error(e);
   }

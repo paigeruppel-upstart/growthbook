@@ -164,6 +164,7 @@ export default function SDKConnectionForm({
       includeRuleIds: initialValue.includeRuleIds ?? false,
       proxyEnabled: initialValue.proxy?.enabled ?? false,
       proxyHost: initialValue.proxy?.host ?? "",
+      proxyAdditionalHosts: initialValue.proxy?.additionalHostsExternal ?? [],
       remoteEvalEnabled: initialValue.remoteEvalEnabled ?? false,
       savedGroupReferencesEnabled:
         initialValue.savedGroupReferencesEnabled ?? false,
@@ -1421,39 +1422,102 @@ export default function SDKConnectionForm({
               />
             </Box>
             {form.watch("proxyEnabled") && (
-              <Field
-                size="legacy"
-                id="sdk-connection-proxyHost"
-                containerClassName="mb-0"
-                label={
-                  <>
-                    Proxy Host URL <small>(optional)</small>
+              <>
+                <Field
+                  size="legacy"
+                  id="sdk-connection-proxyHost"
+                  containerClassName="mb-0"
+                  label={
+                    <>
+                      Proxy Host URL <small>(optional)</small>
+                      <Tooltip
+                        className="ml-1"
+                        body={
+                          <>
+                            <p>
+                              Optionally add your proxy&apos;s public URL to
+                              enable faster rollouts. Providing your proxy host
+                              will allow GrowthBook to push updates to your
+                              proxy whenever feature definitions change.
+                            </p>
+                            <p className="mb-0">
+                              Without GrowthBook&apos;s push updates, the proxy
+                              will fall back to a stale-while-revalidate caching
+                              strategy.
+                            </p>
+                          </>
+                        }
+                      >
+                        <PiInfo />
+                      </Tooltip>
+                    </>
+                  }
+                  placeholder="https://"
+                  type="url"
+                  {...form.register("proxyHost")}
+                />
+                <Box>
+                  <label className="form-label">
+                    Additional Proxy Hosts{" "}
+                    <small>(optional)</small>
                     <Tooltip
                       className="ml-1"
-                      body={
-                        <>
-                          <p>
-                            Optionally add your proxy&apos;s public URL to
-                            enable faster rollouts. Providing your proxy host
-                            will allow GrowthBook to push updates to your proxy
-                            whenever feature definitions change.
-                          </p>
-                          <p className="mb-0">
-                            Without GrowthBook&apos;s push updates, the proxy
-                            will fall back to a stale-while-revalidate caching
-                            strategy.
-                          </p>
-                        </>
-                      }
+                      body="Push feature updates to additional proxy addresses. All hosts receive the same notification in parallel."
                     >
                       <PiInfo />
                     </Tooltip>
-                  </>
-                }
-                placeholder="https://"
-                type="url"
-                {...form.register("proxyHost")}
-              />
+                  </label>
+                  <Flex direction="column" gap="2">
+                    {(form.watch("proxyAdditionalHosts") ?? []).map(
+                      (_, idx) => (
+                        <Flex key={idx} gap="2" align="center">
+                          <Box style={{ flex: 1 }}>
+                            <Field
+                              size="legacy"
+                              containerClassName="mb-0"
+                              placeholder="https://"
+                              type="url"
+                              {...form.register(
+                                `proxyAdditionalHosts.${idx}` as const
+                              )}
+                            />
+                          </Box>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-outline-danger"
+                            onClick={() => {
+                              const current =
+                                form.getValues("proxyAdditionalHosts") ?? [];
+                              form.setValue(
+                                "proxyAdditionalHosts",
+                                current.filter((__, i) => i !== idx)
+                              );
+                            }}
+                          >
+                            Remove
+                          </button>
+                        </Flex>
+                      )
+                    )}
+                    <Box>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-primary"
+                        onClick={() => {
+                          const current =
+                            form.getValues("proxyAdditionalHosts") ?? [];
+                          form.setValue("proxyAdditionalHosts", [
+                            ...current,
+                            "",
+                          ]);
+                        }}
+                      >
+                        + Add another host
+                      </button>
+                    </Box>
+                  </Flex>
+                </Box>
+              </>
             )}
           </Flex>
         </Box>

@@ -63,6 +63,7 @@ interface CreateSdkConnectionRequestBody
   allowedCustomFieldsInMetadata?: string[];
   includeTagsInMetadata?: boolean;
   proxyHost?: string;
+  proxyAdditionalHosts?: string[];
   hashSecureAttributes?: boolean;
 }
 
@@ -195,6 +196,7 @@ export async function validatePostPayload(
     includeTagsInMetadata = false,
     proxyEnabled,
     proxyHost,
+    proxyAdditionalHosts,
     hashSecureAttributes = false,
     ...otherParams
   }: CreateSdkConnectionRequestBody,
@@ -234,6 +236,7 @@ export async function validatePostPayload(
     includeTagsInMetadata,
     proxyEnabled,
     proxyHost,
+    proxyAdditionalHosts,
     hashSecureAttributes,
     ...otherParams,
   };
@@ -265,6 +268,7 @@ export async function validatePutPayload(
     includeTagsInMetadata,
     proxyEnabled,
     proxyHost,
+    proxyAdditionalHosts,
     hashSecureAttributes,
     ...otherParams
   }: Partial<CreateSdkConnectionRequestBody>,
@@ -309,6 +313,7 @@ export async function validatePutPayload(
     includeTagsInMetadata,
     proxyEnabled,
     proxyHost,
+    proxyAdditionalHosts,
     hashSecureAttributes,
     ...otherParams,
   };
