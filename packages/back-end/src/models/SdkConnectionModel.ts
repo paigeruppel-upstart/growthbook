@@ -22,6 +22,7 @@ import {
   PROXY_ENABLED,
   PROXY_HOST_INTERNAL,
   PROXY_HOST_PUBLIC,
+  ADDITIONAL_PROXY_HOST_PUBLIC_ADDRESSES,
 } from "back-end/src/util/secrets";
 import { errorStringFromZodResult } from "back-end/src/util/validation";
 import { ApiReqContext } from "back-end/types/api";
@@ -86,6 +87,7 @@ const sdkConnectionSchema = new mongoose.Schema({
     enabled: Boolean,
     host: String,
     hostExternal: String,
+    additionalHostsExternal: [String],
     signingKey: String,
     connected: Boolean,
     version: String,
@@ -110,6 +112,7 @@ function addEnvProxySettings(proxy: ProxyConnection): ProxyConnection {
     enabled: PROXY_ENABLED,
     host: PROXY_HOST_INTERNAL || PROXY_HOST_PUBLIC,
     hostExternal: PROXY_HOST_PUBLIC || PROXY_HOST_INTERNAL,
+    additionalHostsExternal: ADDITIONAL_PROXY_HOST_PUBLIC_ADDRESSES,
   };
 }
 
@@ -213,6 +216,7 @@ export const createSDKConnectionValidator = z
     includeExperimentScheduleInMetadata: z.boolean().optional(),
     proxyEnabled: z.boolean().optional(),
     proxyHost: z.string().optional(),
+    proxyAdditionalHosts: z.array(z.string()).optional(),
     remoteEvalEnabled: z.boolean().optional(),
     savedGroupReferencesEnabled: z.boolean().optional(),
     managedBy: managedByValidator.optional(),
@@ -229,7 +233,7 @@ export async function createSDKConnection(
   context: ReqContext | ApiReqContext,
   params: CreateSDKConnectionParams,
 ) {
-  const { proxyEnabled, proxyHost, languages, ...otherParams } =
+  const { proxyEnabled, proxyHost, proxyAdditionalHosts, languages, ...otherParams } =
     createSDKConnectionValidator.parse(params);
 
   // TODO: if using a proxy, try to validate the connection
@@ -248,6 +252,7 @@ export async function createSDKConnection(
       enabled: !!proxyEnabled,
       host: proxyHost || "",
       hostExternal: proxyHost || "",
+      additionalHostsExternal: proxyAdditionalHosts ?? [],
       signingKey: generateSigningKey(),
       connected: false,
       lastError: null,
@@ -306,6 +311,7 @@ export const editSDKConnectionValidator = z
     sdkVersion: z.string().optional(),
     proxyEnabled: z.boolean().optional(),
     proxyHost: z.string().optional(),
+    proxyAdditionalHosts: z.array(z.string()).optional(),
     environment: z.string().optional(),
     projects: z.array(z.string()).optional(),
     encryptPayload: z.boolean().optional(),
@@ -332,7 +338,7 @@ export async function editSDKConnection(
   connection: SDKConnectionInterface,
   updates: EditSDKConnectionParams,
 ) {
-  const { proxyEnabled, proxyHost, languages, ...rest } =
+  const { proxyEnabled, proxyHost, proxyAdditionalHosts, languages, ...rest } =
     editSDKConnectionValidator.parse(updates);
 
   const otherChanges = {
@@ -348,6 +354,9 @@ export async function editSDKConnection(
     if (proxyEnabled) {
       newProxy.consecutiveFailures = 0;
     }
+  }
+  if (proxyAdditionalHosts !== undefined) {
+    newProxy.additionalHostsExternal = proxyAdditionalHosts;
   }
   if (proxyHost !== undefined && proxyHost !== connection.proxy.host) {
     newProxy.host = proxyHost;

@@ -5,6 +5,7 @@ export interface ProxyConnection {
   enabled: boolean;
   host: string;
   hostExternal?: string;
+  additionalHostsExternal?: string[];
   signingKey: string;
   connected: boolean;
   version: string;
@@ -19,6 +20,7 @@ export type EditSDKConnectionParams = {
   sdkVersion?: string;
   proxyEnabled?: boolean;
   proxyHost?: string;
+  proxyAdditionalHosts?: string[];
   environment?: string;
   projects?: string[];
   encryptPayload?: boolean;
@@ -44,6 +46,7 @@ export type CreateSDKConnectionParams = {
   sdkVersion?: string;
   proxyEnabled?: boolean;
   proxyHost?: string;
+  proxyAdditionalHosts?: string[];
   environment: string;
   projects: string[];
   encryptPayload: boolean;

@@ -374,6 +374,12 @@ export const SECRET_API_KEY_ROLE =
 export const PROXY_ENABLED = stringToBoolean(process.env.PROXY_ENABLED);
 export const PROXY_HOST_INTERNAL = process.env.PROXY_HOST_INTERNAL || "";
 export const PROXY_HOST_PUBLIC = process.env.PROXY_HOST_PUBLIC || "";
+export const ADDITIONAL_PROXY_HOST_PUBLIC_ADDRESSES: string[] =
+  process.env.ADDITIONAL_PROXY_HOST_PUBLIC_ADDRESSES
+    ? process.env.ADDITIONAL_PROXY_HOST_PUBLIC_ADDRESSES.split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : [];
 
 // global webhooks
 const webhooksString = process.env.WEBHOOKS;
