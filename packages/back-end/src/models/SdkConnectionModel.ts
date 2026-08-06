@@ -22,6 +22,7 @@ import {
   PROXY_ENABLED,
   PROXY_HOST_INTERNAL,
   PROXY_HOST_PUBLIC,
+  ADDITIONAL_PROXY_HOST_PUBLIC_ADDRESSES,
 } from "back-end/src/util/secrets";
 import { errorStringFromZodResult } from "back-end/src/util/validation";
 import { ApiReqContext } from "back-end/types/api";
@@ -110,6 +111,7 @@ function addEnvProxySettings(proxy: ProxyConnection): ProxyConnection {
     enabled: PROXY_ENABLED,
     host: PROXY_HOST_INTERNAL || PROXY_HOST_PUBLIC,
     hostExternal: PROXY_HOST_PUBLIC || PROXY_HOST_INTERNAL,
+    additionalHostsExternal: ADDITIONAL_PROXY_HOST_PUBLIC_ADDRESSES,
   };
 }
 

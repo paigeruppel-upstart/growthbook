@@ -5,6 +5,7 @@ export interface ProxyConnection {
   enabled: boolean;
   host: string;
   hostExternal?: string;
+  additionalHostsExternal?: string[];
   signingKey: string;
   connected: boolean;
   version: string;
