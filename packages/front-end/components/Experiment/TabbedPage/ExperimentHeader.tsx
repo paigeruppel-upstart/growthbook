@@ -225,7 +225,8 @@ export default function ExperimentHeader({
   editSchedule,
 }: Props) {
   const { apiCall } = useAuth();
-  const { hasCommercialFeature } = useUser();
+  const { hasCommercialFeature, settings } = useUser();
+  const publicSharingDisabled = !!settings.disablePublicSharing;
   const { watchedExperiments, refreshWatching } = useWatching();
   const router = useRouter();
   const permissionsUtil = usePermissionsUtil();
@@ -462,7 +463,7 @@ export default function ExperimentHeader({
   ]);
 
   const shareLinkButton =
-    experiment.shareLevel !== "public" ? null : copySuccess ? (
+    experiment.shareLevel !== "public" || publicSharingDisabled ? null : copySuccess ? (
       <Button style={{ width: 130 }} icon={<PiCheck />}>
         Link copied
       </Button>
@@ -924,7 +925,11 @@ export default function ExperimentHeader({
           secondaryCTA={shareLinkButton}
         >
           <div className="mb-3">
-            {shareLevel === "organization" ? (
+            {publicSharingDisabled && shareLevel === "public" ? (
+              <Callout status="info" size="sm">
+                Public links are disabled by your organization administrator.
+              </Callout>
+            ) : shareLevel === "organization" ? (
               <Callout status="info" size="sm">
                 This {isBandit ? "Bandit" : "Experiment"} is only viewable
                 within your organization.
@@ -950,7 +955,11 @@ export default function ExperimentHeader({
             disabled={!hasUpdatePermissions}
             options={[
               { value: "organization", label: "Only organization members" },
-              { value: "public", label: "Anyone with the link" },
+              {
+                value: "public",
+                label: "Anyone with the link",
+                isDisabled: publicSharingDisabled,
+              },
             ]}
           />
           <div className="mb-1" style={{ height: 24 }}>

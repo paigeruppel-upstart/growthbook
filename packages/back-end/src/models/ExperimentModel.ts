@@ -41,6 +41,7 @@ import {
   SETTLED_ANALYSIS_SETTINGS,
 } from "shared/settings";
 import { getExperimentReminderResets } from "back-end/src/services/experimentReminderState";
+import { assertPublicSharingAllowed } from "back-end/src/services/publicSharing";
 import { ReqContext } from "back-end/types/request";
 import {
   assertValidBucketVersions,
@@ -964,6 +965,8 @@ export async function createExperiment({
 }): Promise<ExperimentInterface> {
   data.organization = context.org.id;
 
+  assertPublicSharingAllowed(context.org, data.shareLevel);
+
   if (!data.name) throw new Error("Cannot create experiment with empty name!");
 
   if (!data.trackingKey) {
@@ -1037,6 +1040,29 @@ export async function createExperiment({
   }
 
   return experiment;
+}
+
+export async function disablePublicExperimentSharing(organization: string) {
+  const experiments = await ExperimentModel.find({
+    organization,
+    shareLevel: "public",
+  })
+    .select({ id: 1 })
+    .lean();
+
+  await Promise.all(
+    experiments.map(({ id }) =>
+      ExperimentModel.updateOne(
+        { organization, id, shareLevel: "public" },
+        {
+          $set: {
+            shareLevel: "organization",
+            uid: uuidv4().replace(/-/g, ""),
+          },
+        },
+      ),
+    ),
+  );
 }
 
 export function hasActualChanges(
@@ -1171,6 +1197,7 @@ export async function updateExperiment({
         }
       : {}),
   };
+  assertPublicSharingAllowed(context.org, allChanges.shareLevel);
 
   await onExperimentUpdate({
     context,

@@ -102,6 +102,30 @@ export async function createReport(
   return toInterface(report) as ExperimentSnapshotReportInterface;
 }
 
+export async function disablePublicReportSharing(organization: string) {
+  const reports = await ReportModel.find({
+    organization,
+    type: "experiment-snapshot",
+    shareLevel: "public",
+  })
+    .select({ id: 1 })
+    .lean();
+
+  await Promise.all(
+    reports.map(({ id }) =>
+      ReportModel.updateOne(
+        { organization, id, type: "experiment-snapshot", shareLevel: "public" },
+        {
+          $set: {
+            shareLevel: "organization",
+            uid: uuidv4().replace(/-/g, ""),
+          },
+        },
+      ),
+    ),
+  );
+}
+
 export async function getReportById(
   organization: string,
   id: string,

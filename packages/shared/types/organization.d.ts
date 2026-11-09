@@ -319,6 +319,7 @@ export interface OrganizationSettings {
   secureAttributeSalt?: string;
   /** @deprecated */
   killswitchConfirmation?: boolean;
+  disablePublicSharing?: boolean;
   requireReviews?: boolean | RequireReview[];
   // Reviewers must hold review rights in every environment a draft touches.
   // Project-scoped rules; absent/no-match = strict.

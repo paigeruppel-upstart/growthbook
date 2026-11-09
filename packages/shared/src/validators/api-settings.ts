@@ -148,6 +148,7 @@ export const apiSettingsValidator = namedSchema(
       requireRebaseBeforePublish: z.boolean().optional(),
       revertsBypassApproval: z.boolean().optional(),
       maxConcurrentDrafts: z.coerce.number().optional(),
+      disablePublicSharing: z.boolean().optional(),
       featureKeyExample: z.string(),
       featureRegexValidator: z.string(),
       sparseJSONRulesByDefault: z.boolean().optional(),

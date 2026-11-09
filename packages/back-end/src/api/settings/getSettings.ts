@@ -28,6 +28,7 @@ export const getSettings = createApiRequestHandler(getSettingsValidator)(async (
 
   const settings = {
     ...filteredSettings,
+    disablePublicSharing: req.context.org.settings?.disablePublicSharing ?? false,
     requireReviews: Array.isArray(filteredSettings.requireReviews)
       ? toApiRequireReviews(filteredSettings.requireReviews)
       : [],

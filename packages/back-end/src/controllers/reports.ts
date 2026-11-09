@@ -54,6 +54,10 @@ import {
 } from "back-end/src/services/reports";
 import { getExperimentQueryMetadata } from "back-end/src/services/experiments";
 import { BadRequestError } from "back-end/src/util/errors";
+import {
+  assertPublicSharingAllowed,
+  isPublicSharingDisabled,
+} from "back-end/src/services/publicSharing";
 
 export async function postReportFromSnapshot(
   req: AuthRequest<ExperimentSnapshotReportArgs, { snapshot: string }>,
@@ -280,6 +284,9 @@ export async function getReportPublic(
     });
   }
   const context = await getContextForAgendaJobByOrgId(report.organization);
+  if (isPublicSharingDisabled(context.org)) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
 
   let snapshot =
     (await findSnapshotById(context, report.snapshot)) || undefined;
@@ -535,6 +542,7 @@ export async function putReport(
         "snapshot",
       ]),
     };
+    assertPublicSharingAllowed(org, updates.shareLevel);
     if (data?.experimentMetadata?.phases) {
       updates.experimentMetadata = {
         ...report.experimentMetadata,

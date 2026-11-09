@@ -95,6 +95,8 @@ import {
   getAllFeatures,
   hasNonDemoFeature,
 } from "back-end/src/models/FeatureModel";
+import { disablePublicExperimentSharing } from "back-end/src/models/ExperimentModel";
+import { disablePublicReportSharing } from "back-end/src/models/ReportModel";
 import {
   ALLOW_SELF_ORG_CREATION,
   APP_ORIGIN,
@@ -1854,6 +1856,16 @@ export async function putOrganization(
     }
 
     await updateOrganization(org.id, updates);
+
+    if (
+      settings?.disablePublicSharing === true &&
+      org.settings?.disablePublicSharing !== true
+    ) {
+      await Promise.all([
+        disablePublicExperimentSharing(org.id),
+        disablePublicReportSharing(org.id),
+      ]);
+    }
 
     await req.audit({
       event: "organization.update",

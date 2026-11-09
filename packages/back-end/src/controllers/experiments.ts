@@ -168,6 +168,7 @@ import {
   NotFoundError,
   SoftWarningError,
 } from "back-end/src/util/errors";
+import { isPublicSharingDisabled } from "back-end/src/services/publicSharing";
 import { legacyDocDescribesPhase } from "back-end/src/enterprise/services/data-pipeline";
 import { getFeaturesByIds } from "back-end/src/models/FeatureModel";
 import { generateExperimentReportSSRData } from "back-end/src/services/reports";
@@ -944,6 +945,9 @@ export async function getExperimentPublic(
   }
 
   const context = await getContextForAgendaJobByOrgId(experiment.organization);
+  if (isPublicSharingDisabled(context.org)) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
   const phase = experiment.phases.length - 1;
 
   const snapshot =

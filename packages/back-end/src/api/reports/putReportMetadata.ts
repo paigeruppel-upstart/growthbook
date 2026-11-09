@@ -11,6 +11,7 @@ import { resolveOwnerEmail } from "back-end/src/services/owner";
 import { createApiRequestHandler } from "back-end/src/util/handler";
 import { getExposureQueriesForDatasource } from "back-end/src/services/assignmentQuerySelection";
 import { toReportApiInterface } from "./toReportApiInterface";
+import { assertPublicSharingAllowed } from "back-end/src/services/publicSharing";
 
 export const putReportMetadata = createApiRequestHandler(
   putReportMetadataValidator,
@@ -39,6 +40,7 @@ export const putReportMetadata = createApiRequestHandler(
   }
 
   const { title, description, status, shareLevel, editLevel } = req.body;
+  assertPublicSharingAllowed(org, shareLevel);
 
   const updates: Partial<ExperimentSnapshotReportInterface> = {};
   if (title !== undefined) updates.title = title;

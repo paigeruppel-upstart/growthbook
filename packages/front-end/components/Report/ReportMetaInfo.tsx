@@ -32,6 +32,7 @@ import Owner from "@/components/Avatar/Owner";
 import Metadata from "@/ui/Metadata";
 import Heading from "@/ui/Heading";
 import ShareStatusBadge from "@/components/Report/ShareStatusBadge";
+import { useUser } from "@/services/UserContext";
 
 type ShareLevel = "public" | "organization" | "private";
 type EditLevel = "organization" | "private";
@@ -70,6 +71,8 @@ export default function ReportMetaInfo({
     : `${HOST}/report/${report.id}`;
 
   const { apiCall } = useAuth();
+  const { settings } = useUser();
+  const publicSharingDisabled = !!settings.disablePublicSharing;
 
   const { performCopy, copySuccess } = useCopyToClipboard({
     timeout: 800,
@@ -207,7 +210,7 @@ export default function ReportMetaInfo({
   ]);
 
   const shareLinkButton =
-    report.shareLevel !== "public" ? null : copySuccess ? (
+    report.shareLevel !== "public" || publicSharingDisabled ? null : copySuccess ? (
       <Button style={{ width: 130 }} icon={<PiCheck />}>
         Link copied
       </Button>
@@ -456,7 +459,11 @@ export default function ReportMetaInfo({
           secondaryCTA={shareLinkButton}
         >
           <div className="mb-3">
-            {shareLevel === "organization" ? (
+            {publicSharingDisabled && shareLevel === "public" ? (
+              <Callout status="info" size="sm">
+                Public links are disabled by your organization administrator.
+              </Callout>
+            ) : shareLevel === "organization" ? (
               <Callout status="info" size="sm">
                 This report is discoverable within your organization.
               </Callout>
@@ -486,7 +493,11 @@ export default function ReportMetaInfo({
             options={[
               { value: "private", label: "Only me" },
               { value: "organization", label: "Only organization members" },
-              { value: "public", label: "Anyone with the link" },
+              {
+                value: "public",
+                label: "Anyone with the link",
+                isDisabled: publicSharingDisabled,
+              },
             ]}
           />
           <div className="mb-1" style={{ height: 24 }}>

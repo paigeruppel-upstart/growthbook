@@ -24,6 +24,7 @@ import {
   getReportsByExperimentId,
 } from "back-end/src/models/ReportModel";
 import { getOrgScopedPath } from "back-end/src/routers/upload/upload.util";
+import { isPublicSharingDisabled } from "back-end/src/services/publicSharing";
 
 const SIGNED_IMAGE_EXPIRY_MINUTES = 15;
 
@@ -288,6 +289,14 @@ export async function getSignedPublicImageToken(
     res.status(404).json({
       status: 404,
       message: "Organization not found",
+    });
+    return;
+  }
+
+  if (isPublicSharingDisabled(org)) {
+    res.status(403).json({
+      status: 403,
+      message: "Public sharing is disabled for this organization",
     });
     return;
   }

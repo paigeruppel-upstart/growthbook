@@ -22,9 +22,11 @@ import {
 } from "@/components/GeneralSettings/SettingsGroup";
 import StickyBucketingSettings from "./StickyBucketingSettings";
 import DecisionFrameworkSettings from "./DecisionFrameworkSettings";
+import usePermissionsUtil from "@/hooks/usePermissionsUtils";
 
 export default function ExperimentSettings() {
   const { hasCommercialFeature } = useUser();
+  const permissionsUtil = usePermissionsUtil();
   const form = useFormContext();
   const { defaultFor } = useSettingsForm();
   const cron = form.watch("updateSchedule.cron") || "";
@@ -541,6 +543,24 @@ export default function ExperimentSettings() {
         keywords="decision framework shipping recommendation mde minimum runtime decision criteria"
       >
         <DecisionFrameworkSettings />
+      </SettingsGroup>
+
+      <SettingsGroup
+        id="exp-sharing"
+        title="Sharing"
+        description="Control whether experiments and reports can be viewed through public links."
+        keywords="public sharing reports experiments visibility links"
+      >
+        <UnsavedMark name="disablePublicSharing">
+          <Checkbox
+            id="toggle-disablePublicSharing"
+            label="Disable public sharing"
+            description="Block new public links and prevent access through existing public experiment and report links. Organization members can still view them in GrowthBook."
+            disabled={!permissionsUtil.canManageOrgSettings()}
+            value={!!form.watch("disablePublicSharing")}
+            setValue={(value) => form.setValue("disablePublicSharing", value)}
+          />
+        </UnsavedMark>
       </SettingsGroup>
 
       {editChecklistOpen ? (
